@@ -2284,7 +2284,16 @@ function confirmChoice() {
 
   // la amenaza sube: mas poder central y menos libertad = mas enemigos
   if (!c.pact && CARD.ev.id !== "rival") {
-    const g = 7 + authorityPower * 1.5 + (stats.freedom < 30 ? 3 : 0) + (stats.conflict > 70 ? 2 : 0);
+    // La amenaza NO sube porque cedas poder: eso contradiria a Hobbes.
+    // Sube porque tu reino se vuelve anomico. El caos, el desamparo y el
+    // hambre son lo que hacen que el vecino en orden parezca, con razon,
+    // la respuesta. El ritmo depende de como gobiernas, no de si pactas.
+    let g = 2;
+    if (stats.conflict > 55) g += (stats.conflict - 55) / 11;
+    if (stats.security < 45) g += (45 - stats.security) / 12;
+    if (stats.resources < 30) g += (30 - stats.resources) / 13;
+    if (stats.population < 70) g += (70 - stats.population) / 15;
+    if (stats.conflict < 25 && stats.security > 70 && stats.resources > 60) g = 0.4;
     G.amenaza = clamp(G.amenaza + g, 0, 100);
     // El Rey Aureliano solo viene a cobrar si te convertiste en el tirano:
       // la Amenaza llega a ~91 en el camino autoritario y a ~83 en el libertario.
