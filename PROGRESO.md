@@ -13,13 +13,13 @@
 
 ### Construcción
 
-1. Clonado de `noobi` (el hook de Gamepad API) y lectura de `ascii3DWorld` (el motor) y del
-   `index.html` original de PACTO (el contenido).
-2. Copia del motor a `pacto/index.html` + surgically injection del contenido de PACTO con un
-   script, sin reescribir una línea de texto.
+1. Lectura del motor ASCII 3D y del `index.html` original de PACTO (todo el contenido textual:
+   16 eventos, las 2 ramas, el PACTO y la lógica de los 8 finales).
+2. Copia del motor a `pacto/index.html` + inyección del contenido de PACTO con un script, sin
+   reescribir una línea de texto.
 3. Capa de juego: estado, turnos, cartas, amenaza, puntuación, finales.
-4. **Fase de limpieza** — borrado de la dead code de `ascii-fps` con un removedor de funciones
-   consciente de llaves. ~1.100 líneas fuera.
+4. **Fase de limpieza** — borrado de la dead code heredada del motor base (cueva, combate,
+   misiones, guardado) con un removedor de funciones consciente de llaves. ~1.100 líneas fuera.
 5. **Fase de entrada** — sistema de un solo modo activo.
 6. QA automatizada en navegador con pathfinder BFS propio.
 

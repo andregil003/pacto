@@ -2479,7 +2479,7 @@ function bindCfg() {
   $("btnAgain").onclick = () => { newWorld(Math.floor(Math.random() * 99999) + 1); resetGame(); };
 }
 
-// ---- Gamepad API: hook propio, poll a 30 fps (D-011 de Noobi) ----
+// ---- Gamepad API: hook propio, poll a 30 fps (menos CPU, respuesta idéntica) ----
 function initPad() {
   addEventListener("gamepadconnected", e => {
     IN.padIndex = e.gamepad.index;

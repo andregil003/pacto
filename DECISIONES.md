@@ -214,7 +214,7 @@ teclado real, no con la lógica.
 
 ### B-004 · La cámara con mando iba a 30 fps
 
-El giro del stick se aplicaba dentro del poll del gamepad (30 fps, D-011 de Noobi) mientras el
+El giro del stick se aplicaba dentro del poll del gamepad (30 fps) mientras el
 render iba a 60. Resultado: **un salto de cámara cada 2 frames**, que André reportó como
 "se ve todo trabado". Ahora el poll solo guarda el valor crudo y `step()` (60 fps) lo aplica
 con suavizado exponencial. La cruceta da un impulso instantáneo, no una velocidad.
