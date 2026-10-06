@@ -150,6 +150,26 @@
   #endDeeds { text-align: left; max-height: 172px; overflow: auto; margin: 18px auto 4px; padding: 0 4px 0 18px;
     font-size: 12.5px; line-height: 1.55; color: #9db0a8; columns: 1; }
   #endDeeds li { margin-bottom: 6px; }
+  /* pregunta final */
+  .askq { margin:12px 0 18px; font-size:clamp(15px,2.3vw,21px); line-height:1.25; color:#eef7f0; }
+  .guesses { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px; max-width:760px; margin:0 auto; }
+  .guess { font:inherit; font-size:13.5px; padding:13px 12px; border-radius:9px; cursor:pointer;
+    color:#dfeae4; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.14); transition:.14s ease; }
+  .guess:hover { border-color:rgba(143,224,122,.5); background:rgba(143,224,122,.10); transform:translateY(-2px); }
+  .guess.ok  { border-color:rgba(106,227,162,.75); background:rgba(106,227,162,.14); color:#9ef0bf; }
+  .guess.no  { border-color:rgba(255,107,117,.55); background:rgba(255,107,117,.10); color:#ffb1b7; }
+  .guess[disabled] { cursor:default; transform:none; }
+  .guessfb { margin-top:16px; min-height:24px; font-size:13.5px; color:#b8c8c0; }
+  .guessfb.ok { color:#9ef0bf; } .guessfb.no { color:#ffb1b7; }
+
+  /* revelacion */
+  .reveal-name { font-size:clamp(30px,7vw,58px); line-height:1; margin:12px 0 4px; color:#ffe9a8; letter-spacing:.06em; }
+  .reveal-years { color:#8fa095; letter-spacing:.2em; font-size:12px; margin-bottom:16px; }
+  .reveal-pill { display:inline-block; padding:7px 14px; border-radius:99px; font-size:11px; font-weight:800;
+    letter-spacing:.22em; color:#a8e3ff; background:rgba(104,200,255,.10); border:1px solid rgba(104,200,255,.28); margin-bottom:22px; }
+  .reveal-copy { max-width:68ch; margin:0 auto 14px; font-size:14.5px; line-height:1.72; color:#c2d0c8; text-align:left; }
+  .reveal-q { margin-top:22px; font-size:clamp(16px,2.6vw,22px); font-weight:800; color:#8fe07a; text-align:center; }
+  .twhy { font-size:9.5px; line-height:1.45; color:#ffb1b7; margin-top:4px; letter-spacing:.2px; opacity:.9; }
   .veilhead { font-size: 10px; letter-spacing: 3px; color: #7f928a; text-transform: uppercase; margin-top: 20px; }
   .crow { display: flex; justify-content: space-between; align-items: center; gap: 14px;
     padding: 7px 2px; border-bottom: 1px solid rgba(255,255,255,.06); color: #b8c8c0; }
@@ -222,7 +242,8 @@
       <div class="chip conflict"><div class="cn"><span>CONFLICTO</span></div><div class="cv" id="vConflict">15</div><div class="cb"><i id="bConflict" style="width:15%"></i></div></div>
     </div>
     <div id="threat">
-      <div class="tn"><span>AMENAZA · REY AURELIANO</span><span id="threatVal">20</span></div>
+      <div class="tn"><span>ORDEN VECINA · REY AURELIANO</span><span id="threatVal">20</span></div>
+      <div class="twhy" id="threatWhy">Su reino está en orden porque él sí entregó su libertad.</div>
       <div class="tt"><i id="threatFill"></i></div>
     </div>
   </div>
@@ -311,7 +332,27 @@
         <div id="endBreak"></div>
         <div class="veilhead">Tus decretos</div>
         <ul id="endDeeds"></ul>
-        <div class="btnrow" style="margin-top:18px"><button class="btn" id="btnAgain">NUEVO REINADO</button></div>
+
+        <div id="askVeil" style="margin-top:30px">
+          <div class="kicker">Última pregunta</div>
+          <h3 class="askq">¿QUÉ FILÓSOFO CREES QUE INSPIRÓ ESTA EXPERIENCIA?</h3>
+          <div id="askOpts" class="guesses"></div>
+          <div id="askFb" class="guessfb"></div>
+        </div>
+
+        <div id="revealVeil" style="display:none">
+          <div class="kicker" style="color:#8fe07a">La idea detrás de todo esto</div>
+          <div class="reveal-name">THOMAS HOBBES</div>
+          <div class="reveal-years">1588–1679</div>
+          <div class="reveal-pill">CONTRATO SOCIAL</div>
+          <p class="reveal-copy">Durante la partida viviste el problema central de Hobbes: ¿qué pasa
+          cuando los individuos viven sin una autoridad común capaz de garantizar que se cumplan
+          las reglas?</p>
+          <p class="reveal-copy">El pacto es literalmente su respuesta: entregas parte de tu libertad
+          y recibes protección y orden. El pacto es el precio de no vivir en guerra.</p>
+          <p class="reveal-copy reveal-q">¿Ahora entiendes qué estabas comprando?</p>
+          <div class="btnrow" style="margin-top:18px"><button class="btn" id="btnAgain">JUGAR OTRA VEZ</button></div>
+        </div>
       </div>
     </div>
   </div>
@@ -391,17 +432,23 @@ function add(Lv, type, x, y, o) {
 //  Todo el arte se REAPROVECHA del motor: fountain, barrel, oak,
 //  lamp y torch ya existían. Cero pixel art nuevo.
 // ============================================================
+// Cada lugar es una pregunta filosofica, no solo una estadistica.
 const MON = [
   { id:"population", name:"LA PLAZA",   cost:5,  ox:16.8, oy:9.8,  art:"fountain", o:{ w:2.1, h:2.1, r:0.95 }, top:2.2, stat:"population",
-    blurb:"El corazón del dominio. Aquí se nota si tu gente vive o se va." },
-  { id:"resources",  name:"EL ALMACÉN", cost:7, ox:10.5, oy:5.5,  art:"barrel",   o:{ w:1.3, h:1.0, r:0.34 }, top:1.1, stat:"resources",
-    blurb:"Grano, herramientas y madera. Lo único que sostiene el invierno." },
+    tema:"Lo decidió entre todos",
+    blurb:"Aquí se decide lo que es de todos. ¿Quién manda cuando no hay nadie al que obedecer?" },
+  { id:"resources",  name:"EL ALMACÉN", cost:7,  ox:10.5, oy:5.5,  art:"barrel",   o:{ w:1.3, h:1.0, r:0.34 }, top:1.1, stat:"resources",
+    tema:"Lo que es tuyo y lo que es mío",
+    blurb:"Grano, herramientas y madera. ¿Qué es tuyo cuando hay hambre alrededor?" },
   { id:"freedom",    name:"EL ÁRBOL",   cost:3,  ox:30.5, oy:5.5,  art:"oak",      o:{ w:4.4, h:5.8, r:1.15 }, top:5.9, stat:"freedom",
-    blurb:"El árbol que plantó el primer rey. Crece si lo dejas crecer." },
-  { id:"security",   name:"LA GUARDIA", cost:9, ox:29.5, oy:8.5,  art:"lamp",     o:{ w:0.9, h:3.1, r:0.2 },  top:3.2, stat:"security",
-    blurb:"Faroles y hombres armados. La paz tiene un precio en grano." },
-  { id:"conflict",   name:"LA HOGUERA", cost:6, ox:9.5,  oy:17.5, art:"torch",    o:{ w:0.7, h:1.3, r:0.16 }, top:1.4, stat:"conflict",
-    blurb:"Donde arden las quejas. Cuando crece, la plaza ya no duerme." },
+    tema:"Vivir sin que nadie te lo mande",
+    blurb:"El árbol que plantó el primer rey. ¿Tu libertad sobrevive a tu propia libertad?" },
+  { id:"security",   name:"LA GUARDIA", cost:9,  ox:29.5, oy:8.5,  art:"lamp",     o:{ w:0.9, h:3.1, r:0.2 },  top:3.2, stat:"security",
+    tema:"Protección o control",
+    blurb:"Faroles y hombres armados. ¿Quién te protege: el rey o tus propias armas?" },
+  { id:"conflict",   name:"LA HOGUERA", cost:6,  ox:9.5,  oy:17.5, art:"torch",    o:{ w:0.7, h:1.3, r:0.16 }, top:1.4, stat:"conflict",
+    tema:"El desorden que empieza en silencio",
+    blurb:"Donde arden las quejas. ¿Puedes dejar que se quejen sin que arda la plaza?" },
 ];
 MON.forEach((m, i) => { m.i = i; });   // indice del monumento: lo usan el marcador, el minimapa y la audiencia
 
@@ -2069,10 +2116,10 @@ function tone(kind) {
 // El PACTO original no traia choices en el dato (las pintaba en el DOM).
 // Aqui se le dan, con `pact` como bandera de rama.
 pactEvent.choices = [
-  { pact:true, text:"ACEPTAR EL PACTO \u00b7 Crear una autoridad com\u00fan.",
-    result:"La comunidad crea una autoridad com\u00fan y acepta que sus decisiones puedan imponerse incluso a quienes no est\u00e9n de acuerdo. La sensaci\u00f3n de orden mejora de inmediato, pero la libertad individual se reduce." },
-  { pact:false, text:"RECHAZAR EL PACTO \u00b7 Seguir sin autoridad central.",
-    result:"La comunidad conserva su independencia y rechaza entregar poder permanente a una autoridad central. La libertad aumenta, pero la responsabilidad de mantener los acuerdos queda nuevamente en manos de individuos y grupos." }
+  { pact:true,  text:"ACEPTAR. Ceder a una autoridad el poder de IMPONER Y HACER CUMPLIR las reglas.",
+    result:"La comunidad crea una autoridad común y acepta que sus decisiones puedan imponerse incluso a quienes no estén de acuerdo. El orden mejora de inmediato. La libertad individual, no." },
+  { pact:false, text:"RECHAZAR. Que cada uno se haga cargo de lo suyo, y de las consecuencias.",
+    result:"La comunidad conserva su independencia y rechaza entregar poder permanente a una autoridad central. Nadie podrá imponer nada a nadie, y nadie quedará libre de las consecuencias." }
 ];
 
 // ---------------------------------------------------------------- ciclo
@@ -2131,17 +2178,17 @@ function currentEvent() {
 function rivalEvent() {
   return {
     id:"rival", title:"EL VECINO DE AL LADO",
-    description:"Un mensajero de " + RIVAL + " llega a tu plaza. No trae saludo: trae una lista. Dice que mientras tu reino crezca y el suyo no, la frontera es un asunto pendiente. Te pide una parte de tus reservas y una explicaci\u00f3n por escrito.",
+    description:"Un mensajero de " + RIVAL + " llega a tu plaza. No trae amenazas: trae una pregunta. Dice que su reino lleva tres generaciones sin hambre y sin miedo, y que él mismo se lo shrine. Te pregunta si tú puedes decir lo mismo. Lo pregunta sin ironía, que es lo que lo hace peor.",
     choices:[
-      { text:"Pagar el tributo y comprarle la paz.", effects:{ resources:-26, security:6, freedom:-3 },
-        result:"Pagas. La frontera se calma y " + RIVAL + " acepta llamarlo un arreglo. El grano que gastaste no vuelve.",
-        history:"Pagaste tributo a " + RIVAL + " para comprar la paz." },
-      { text:"Negociar: nada de grano, pero un acuerdo entre ambos reinos.", effects:{ resources:-6, freedom:4, conflict:6 },
-        result:"No cedes nada ahora. Logras un acuerdo verbal que ninguno de los dos firmar\u00e1 mientras pueda evitarlo. La tensi\u00f3n queda aplazada, no resuelta.",
-        history:"Negociaste con " + RIVAL + " sin entregar grano." },
-      { text:"Cerrar la frontera y plantar cara.", effects:{ resources:3, freedom:8, security:-4, conflict:14 },
-        result:"Nadie se rinde. Tus reservas quedan intactas y " + RIVAL + " queda esperando que puede cruzar la frontera cuando quiera.",
-        history:"Cerraste la frontera ante " + RIVAL + "." }
+      { text:"Preguntarle si el suyo es tan sólido como parece.", effects:{ freedom:6, conflict:7 },
+        result:"Le recuerdas que su orden tambalea igual. No cede nada y se ocupa solo. El acuerdo será verbal y frágil.",
+        history:"Le recordaste a " + RIVAL + " que su estabilidad no es eterna." },
+      { text:"Adoptar parte de su pacto: reglas comunes y un guardián.", effects:{ security:13, conflict:-9, freedom:-9 },
+        result:"Tomas una parte de lo que él hizo y lo haces tuyo. No es un favor: es reconocer que quizás tenía razón. Tu libertad paga el coste.",
+        history:"Adoptaste parte del pacto de " + RIVAL + "." },
+      { text:"Cerrar la frontera: cada reino aprende por separado.", effects:{ freedom:9, conflict:15, security:-5 },
+        result:"Nadie cede. Tu reino sigue siendo un experimento y nadie te va a decir si funciona. Eso también es una forma de libertad.",
+        history:"Dejaste a " + RIVAL + " seguir con su camino." }
     ]
   };
 }
@@ -2398,6 +2445,12 @@ function computeScore() {
   if (acceptedPact && authorityPower >= 3) s += 40;
   return Math.max(0, Math.round(s));
 }
+const FILOSOFOS = [
+  { n:"René Descartes",  ok:false, por:"Filosofo de la razon y el metodo. Interesa, pero no es de quien es este juego." },
+  { n:"John Locke",      ok:false, por:"Piensa la libertad como un derecho natural que el Estado no crea, sino que protege." },
+  { n:"Thomas Hobbes",   ok:true,  por:"Sostiene que sin una autoridad comun no hay vida civil, solo guerra de todos contra todos." },
+  { n:"Francis Bacon",   ok:false, por:"Metodo y conocimiento. Nozzle de ninguna teoria del contrato." }
+];
 function finishGame() {
   G.over = true;
   const e = determineEnding(), score = computeScore();
@@ -2406,11 +2459,47 @@ function finishGame() {
   $("endNum").textContent = score;
   $("endBreak").innerHTML = STAT_KEYS.map(k =>
     '<div class="eb"><span>' + EMO[k] + " " + STAT_ES[k] + "</span><strong>" + Math.round(stats[k]) + "</strong></div>").join("")
-    + '<div class="eb pen"><span>' + RIVAL + '</span><strong>\u2212' + Math.round(2 * G.amenaza) + "</strong></div>";
+    + '<div class="eb pen"><span>Voz de Aureliano</span><strong>' + Math.round(G.amenaza) + "</strong></div>";
   $("endDeeds").innerHTML = G.deeds.map(d => "<li>" + esc(d) + "</li>").join("");
+  buildGuess();
+  $("askVeil").style.display = "";
+  $("revealVeil").style.display = "none";
   $("endVeil").classList.add("on");
   $("turno").textContent = "Reinado cerrado";
   tone("grave");
+}
+function buildGuess() {
+  const box = $("askOpts");
+  box.innerHTML = "";
+  $("askFb").textContent = "";
+  $("askFb").className = "guessfb";
+  for (const f of FILOSOFOS) {
+    const b = document.createElement("button");
+    b.className = "guess";
+    b.textContent = f.n;
+    b.onclick = () => {
+      const fb = $("askFb");
+      for (const el of box.children) el.disabled = true;
+      for (const el of box.children) if (el.textContent === "Thomas Hobbes") el.classList.add("ok");
+      if (f.ok) {
+        b.classList.add("ok");
+        fb.className = "guessfb ok";
+        fb.textContent = "Correcto. Esa era la idea. Mira lo que acabas de comprar.";
+        tone("good");
+        setTimeout(reveal, 700);
+      } else {
+        b.classList.add("no");
+        fb.className = "guessfb no";
+        fb.textContent = "No. " + f.por;
+        tone("bad");
+      }
+    };
+    box.appendChild(b);
+  }
+}
+function reveal() {
+  $("askVeil").style.display = "none";
+  $("revealVeil").style.display = "";
 }
 
 // ============================================================
